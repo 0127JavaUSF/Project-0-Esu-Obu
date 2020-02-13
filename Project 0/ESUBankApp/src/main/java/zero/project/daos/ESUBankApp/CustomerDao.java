@@ -4,30 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import zero.project.exceptions.ESUBankApp.ValidationException;
+//import zero.project.exceptions.ESUBankApp.ValidationException;
 import zero.project.models.ESUBankApp.Customer;
 import zero.project.util.ESUBankApp.ConnectionUtil;
 
 
 
-public interface CustomerDao {
-/*
-			public static Customer createUser(Customer customer) {
-				// TODO Auto-generated method stub
-				return customer;
-			}
-	
-	
-			  try {
-				createUser = customerService.createUser(customer);
-			} catch (ValidationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			  */
-
-	//System.out.println(customer);
-	
+public interface CustomerDao {	
 	
 //take the data from db and add to java variables----------------------------------------------
 	static Customer extractUser(ResultSet result) throws SQLException {
@@ -46,10 +29,10 @@ public interface CustomerDao {
 					" VALUES (?, ?, ?) RETURNING *";
 			PreparedStatement statement = connection.prepareStatement(sql);
 			statement.setInt(1, customer.getCustId());
-			statement.setString(2, customer.getCustName());
-			statement.setString(3, customer.getUserName());
+			statement.setString(2, Customer.getCustName());
+			statement.setString(3, Customer.getUserName());
 			statement.setString(4, customer.getEmail());
-			statement.setString(5, customer.getPassword());
+			statement.setString(5, Customer.getPassword());
 			statement.setInt(6, customer.getAccntNum());
 			ResultSet result = statement.executeQuery();
 			if(result.next()) {

@@ -39,5 +39,10 @@ public class UserInputUtil {
 		return 0;
 	}
 
+	public static boolean next() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 
 }

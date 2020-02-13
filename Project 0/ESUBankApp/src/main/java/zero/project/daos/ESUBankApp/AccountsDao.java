@@ -40,7 +40,7 @@ public class AccountsDao {
 		return new Customer(custId, custName, userName, password, email, accntNum);
 	}
 	
-	public static Account getAccount(String accntHolder, int accntNum) {
+	public static Account getAccount(int accntNum) {
 		try(Connection connection = ConnectionUtil.getConnection()) {
 			String sql = "SELECT accnt_num, accnt_type, accnt_holder, routing_num, balance  FROM accounts " +
 					"WHERE accnt_num = ?";
@@ -48,15 +48,15 @@ public class AccountsDao {
 			PreparedStatement statement = connection.prepareStatement(sql);
 			
 			// Sets the PreparedStatement parameters
-			statement.setString(1, accntHolder);
+			statement.setInt(1, accntNum);
 			
 			ResultSet result = statement.executeQuery();
 			
 			if(result.next()) {
 				String accntType = result.getString("accnt_type");
-				accntNum = result.getInt("accnt_num");
-				int routingNum = result.getInt("routing_num");
-				double balance = result.getInt("balance");
+				String accntHolder = result.getString("accntholder");
+			    int routingNum = result.getInt("routing_num");
+				double balance = result.getDouble("balance");
 				return new Account(accntNum, accntType, accntHolder, routingNum, balance);
 			}
 		} catch(SQLException e) {
@@ -68,14 +68,14 @@ public class AccountsDao {
 	public static Account createAccount(Account account) {
 		try(Connection connection = ConnectionUtil.getConnection()) {
 			String sql = "INSERT INTO accounts (accnt_type, accnt_holder, balance) " +
-					" VALUES (?, ?) RETURNING *";
+					" VALUES (?, ?, ?) RETURNING *";
 			PreparedStatement statement = connection.prepareStatement(sql);
 			
-			statement.setInt(1, account.getAccntNum());
+			statement.setInt(1, Account.getAccntNum());
 			statement.setString(2, account.getAccntType());
 			statement.setString(3, account.getAccntHolder());
-			//statement.setInt(4, Account.getRoutingNum());
-			statement.setDouble(4, Account.getBalance());
+			statement.setInt(4, Account.getRoutingNum());
+			statement.setDouble(5, Account.getBalance());
 			
 			ResultSet result = statement.executeQuery();
 			
@@ -109,11 +109,12 @@ public class AccountsDao {
 		return customers;
 	}
 
-	public static Account getAccount(int accntNum) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	/*
+	 * public static Account getAccount(int accntNum) { // TODO Auto-generated
+	 * method stub return null; }
+	 */
 
+	//closes an account upon customer's request
 	public static Account closeAccount(int accntNum) {
 		try(Connection connection = ConnectionUtil.getConnection()) {
 			
@@ -130,13 +131,72 @@ public class AccountsDao {
 		}
 		return null;
 	}
-	
 
-	/*
-	 * public static String extractAccount(String accntNum) { // TODO Auto-generated
-	 * method stub return null; }
-	 * 
-	 * public String setAccount(String accntNum) { // TODO Auto-generated method
-	 * stub return accntNum; }
-	 */
+	//Updates the balance every time a transaction occurs
+	public static Account updateBalance(double balance) {
+		try(Connection connection = ConnectionUtil.getConnection()) {
+			String sql = "UPDATE TABLE accounts SET balance = ? WHERE accnt_num = ?" +
+					" RETURNING *";
+			PreparedStatement statement = connection.prepareStatement(sql);
+			
+			
+			statement.setDouble(1, Account.getBalance());
+			
+			statement.executeQuery();
+			
+			
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return null ;
+		
+		
+	}
+
+
+	public static Account shareHearts(int accntNum1, double balance1, int transfAccntNum, double transfbalance) {
+		try(Connection connection = ConnectionUtil.getConnection()) {
+			//Turn off transaction autocommit
+			connection.setAutoCommit(false);			
+			
+			//Update first account that is going to transfer money
+			String sql = "UPDATE TABLE accounts SET balance = ? WHERE accnt_num = ?" +
+					" RETURNING *";
+		
+			PreparedStatement statement = connection.prepareStatement(sql);
+			
+			
+			statement.setInt(1, accntNum1);
+			statement.setDouble(2, balance1);
+			statement.executeQuery();
+			
+			//Savepoint in case first transaction might fall through
+			connection.setSavepoint();
+			
+			
+			//Update first account that is going to transfer money
+			//reassign sql object with new query
+			sql = "UPDATE TABLE accounts SET balance = ? WHERE accnt_num = ?" +
+					" RETURNING *";
+				
+			//reassign statement the new sql query
+			statement = connection.prepareStatement(sql);		
+			
+			statement.setDouble(3, transfAccntNum);
+			statement.setDouble(4, transfbalance);			
+			statement.executeQuery();
+			
+			//End of transaction block
+			connection.commit();
+			
+			//set transaction
+			connection.setAutoCommit(true);
+			
+			
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return null ;
+	}
+
 }

@@ -10,11 +10,12 @@ public class Launcher {
 		
 		while(view != null) {
 			view.showMenu();
+			System.out.println("hereee0");
 			view = view.selectOption();
 			
 		}
 		
-		System.out.println("Thank you for visiting E$U Bank!");
+		//System.out.println("Thank you for visiting ESU Bank!");
 
 	}
 

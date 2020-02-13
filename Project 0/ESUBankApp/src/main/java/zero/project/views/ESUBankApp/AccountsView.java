@@ -2,7 +2,7 @@ package zero.project.views.ESUBankApp;
 
 //import java.sql.ResultSet;
 import java.util.List;
-import java.util.Scanner;
+//import java.util.Scanner;
 
 import zero.project.daos.ESUBankApp.AccountsDao;
 import zero.project.daos.ESUBankApp.CustomerDao;
@@ -19,7 +19,7 @@ public class AccountsView implements View {
 		@Override
 		public void showMenu() {
 			System.out.println("------------------------------------------------------------------------------");
-			System.out.println("1. Load Account");
+			System.out.println("1. Get Account");
 			System.out.println("2. Create Account");
 			System.out.println("3. Get Account Users");
 			System.out.println("0. Back");
@@ -36,8 +36,8 @@ public class AccountsView implements View {
 			
 			switch(selectedItem) {
 			case 0: return new MainMenu();
-			case 1: this.loadAccount(); return this;
-			case 2: this.createAccount(); return this;
+			case 1: loadAccount(); //return this;
+			case 2: createAccount(); //return this;
 			case 3: this.printAccountUsers(); return this;
 			default: return null;
 			}		
@@ -50,35 +50,35 @@ public class AccountsView implements View {
 			System.out.println("|      Customer ID      |      Full Name      |               Email              |    Account No.  | ");
 			customers.forEach(r -> {
 				System.out.printf("|%23d |%-21s |%-34s |%17d |%n", 
-						r.getCustId(), r.getCustName(), r.getEmail(), r.getAccntNum());
+						r.getCustId(), Customer.getCustName(), r.getEmail(), r.getAccntNum());
 				});
 		}
 		
 		public Account loadAccount() {
 			System.out.println("------------------------------------------------------------------------------");
-			Scanner scanner = new Scanner(System.in);
 			//Prompt user for their account number
 			System.out.println("Enter your account number: ");
 			System.out.println("------------------------------------------------------------------------------");
-			int accntNum = scanner.nextInt();
-			while(scanner.hasNext()) {
-				
-				//Pull data from search into class
-				Account account = AccountsDao.getAccount(accntNum);
-				
-			/*
-			 * //check if account number is same as in database if (Account.getAccntNum() ==
-			 * accntNum) { CustomerView.showMenu(); }
-			 */
-				
+			int accntNum = UserInputUtil.getNextInt();
+			
+
+			if (AccountsDao.getAccount(accntNum) == null) {
+				do {
+					System.out.println("Please enter a valid account number.");
+					accntNum = UserInputUtil.getNextInt();	
+				} while (AccountsDao.getAccount(accntNum) == null);
 			}
-			return null;
+			
+			Account account = AccountsDao.getAccount(accntNum);
+			return account;
+			
+		}
 			
 				
 				
 				//System.out.println(account);
 					
-		}
+		
 			
 			
 			
@@ -88,7 +88,6 @@ public class AccountsView implements View {
 				System.out.println("------------------------------------------------------------------------------");	
 				System.out.println("Enter full name please: "); 
 				String accntHolder = UserInputUtil.getNextString();
-				//String custName = accntHolder;
 				System.out.println("Enter a valid email: "); 
 				String email = UserInputUtil.getNextString();
 				System.out.println("Please create a username: ");
@@ -113,14 +112,10 @@ public class AccountsView implements View {
 				String accntType = UserInputUtil.getNextString();
 				do {
 					switch(selectedItem) {
-					case 1: accntType = "Single Lady/Solo Dolo Checking";
-										break;
-					case 2: accntType = "Single Lady/Solo Dolo Savings";
-										break;
-					case 3: accntType = "Mrs./Mr. Checking";
-										break;
-					case 4: accntType = "Mrs./Mr. Savings";
-										break;
+					case 1: accntType = "Single Lady/Solo Dolo Checking"; break;
+					case 2: accntType = "Single Lady/Solo Dolo Savings"; break;
+					case 3: accntType = "Mrs./Mr. Checking"; break;
+					case 4: accntType = "Mrs./Mr. Savings"; break;
 					default: System.out.println("Please enter a valid number from the option above");
 				    }
 					
@@ -131,7 +126,9 @@ public class AccountsView implements View {
 				
 				//Send customer's account informtion to dao to add to database
 				Account account = new Account(0, accntType, accntHolder, 0, balance); 
-				account = AccountsDao.createAccount(account); 
+				account = AccountsDao.createAccount(account);
+				
+				
 				System.out.println(account);
 				
 				//System.out.println("Please enter a number between 0 and 2: ");			 
